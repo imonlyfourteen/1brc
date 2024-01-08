@@ -1,11 +1,12 @@
 /*
-    gcc -O2 1brc.c -o 1brc -march=native
+    gcc -O2 -march=native 1brc.c -o 1brc
     time ./1brc measurements.txt
 
     Single thread, file mmap, data specific hash function,
     custom "%.1f"-format floats parsing.
 
     https://github.com/gunnarmorling/1brc
+    https://github.com/imonlyfourteen/1brc
 
     " The task is to write a Java program which reads the file, calculates 
       the min, mean, and max temperature value per weather station, and emits 
@@ -30,7 +31,7 @@ struct Station {
     int32_t n;
     int32_t min;
     int32_t max;
-    char name[44];
+    char name[32];
 } stations[0x10000];
 
 char* mmap_file_read(char* name, uint64_t* len) {
@@ -47,13 +48,16 @@ char* mmap_file_read(char* name, uint64_t* len) {
 
 static inline void parse_line(char **s) {
     char *p = *s;
-    uint16_t id = 0x5555;       /* hash initial value, chosen by hand */
+    uint16_t id=0;
     
-    /* hash compute */
-    do {
-        uint16_t rol = (id<<2) | (id >>14);
-        id = rol ^ *p;          /* this hash function is very data specific */
-    } while (*++p != ';');
+    /* hash compute, unroll part of the loop */
+    #define ROL(x, n)  (x<<n | x>>(16-n))
+    id = ROL(id, 2) ^ *p++;
+    id = ROL(id, 2) ^ *p++;
+    id = ROL(id, 2) ^ *p++;
+    while (*p != ';') {
+        id = ROL(id, 2) ^ *p++;
+    }
     
     /* copy name */
     if (stations[id].name[0] == '\0') {
@@ -79,7 +83,7 @@ static inline void parse_line(char **s) {
             break; 
         }
         t = t * 10 + *p++ - '0';
-    } while (1);     
+    } while (1);
     t *= sign;
 
     /* line done, move to next one */
