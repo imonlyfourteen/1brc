@@ -1,5 +1,5 @@
 /*
-    gcc -O2 -march=native 1brc.c -o 1brc
+    gcc -O2 1brc.c -o 1brc -march=native
     time ./1brc measurements.txt
 
     Single thread, file mmap, data specific hash function,
@@ -51,7 +51,8 @@ void parse_line(char **s) {
     
     /* hash compute */
     do {
-        id += (id << 7) ^ *p;   /* this hash function is very data specific */
+        uint16_t rol = (id<<2) | (id >>14);
+        id = rol ^ *p;          /* this hash function is very data specific */
     } while (*++p != ';');
     
     /* copy name */
