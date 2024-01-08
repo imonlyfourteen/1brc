@@ -45,7 +45,7 @@ char* mmap_file_read(char* name, uint64_t* len) {
     return mmap(0, *len, PROT_READ, MAP_PRIVATE, fd, 0);
 }
 
-void parse_line(char **s) {
+static inline void parse_line(char **s) {
     char *p = *s;
     uint16_t id = 0x5555;       /* hash initial value, chosen by hand */
     
