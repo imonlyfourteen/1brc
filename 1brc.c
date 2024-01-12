@@ -34,7 +34,7 @@ struct Station {
     char name[32];
 } stations[0x10000];
 
-char* mmap_file_read(char* name, uint64_t* len) {
+void* mmap_file_read(char* name, uint64_t* len) {
     int fd = open(name, O_RDONLY);
     if (fd < 0) {
         fprintf(stderr, "Error: %m\n");
@@ -46,27 +46,25 @@ char* mmap_file_read(char* name, uint64_t* len) {
     return mmap(0, *len, PROT_READ, MAP_PRIVATE, fd, 0);
 }
 
-static inline void parse_line(char **s) {
-    char *p = *s;
-    uint16_t id=0;
+static inline void parse_line(uint8_t **s) {
+    uint8_t *p = *s, *q = p;
+    uint16_t id;
     
-    /* hash compute, unroll part of the loop */
-    #define ROL(x, n)  (x<<n | x>>(16-n))
-    id = ROL(id, 2) ^ *p++;
-    id = ROL(id, 2) ^ *p++;
-    id = ROL(id, 2) ^ *p++;
-    while (*p != ';') {
-        id = ROL(id, 2) ^ *p++;
-    }
+    /* hash compute, from initial letters and name size */
+    p += 3;
+    while (*p != ';') { p++; }
+    p++;
+    id = q[0];
+    id = id<<3 ^ q[1];
+    id = id<<3 ^ q[2];
+    id = id<<3 ^ p[-4];
+    id = id<<3 ^ (p-q);
     
     /* copy name */
     if (stations[id].name[0] == '\0') {
-        memcpy(stations[id].name, *s, p - *s);
+        memcpy(stations[id].name, *s, p - *s - 1);
     }
 
-    /* skip ';' */
-    p++;
-    
     /* read temperature, format is "%.1f" */
     int32_t t = 0, 
             sign = 1;
@@ -120,8 +118,8 @@ int main(int argc, char **argv) {
     
     /* mmap the file */
     uint64_t len;
-    char *fmap = mmap_file_read(argv[1], &len);
-    char *line = fmap;
+    uint8_t *fmap = mmap_file_read(argv[1], &len);
+    uint8_t *line = fmap;
     
     /* parse lines and fill in stations data */
     while (line < fmap + len) {
