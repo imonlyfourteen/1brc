@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     if (err) {
         fprintf(stderr, "Usage: %s [-r] <n>\n", argv[0]);
         fprintf(stderr, "           -r  - UTF-8 station names from static 10k random pool\n");
-        fprintf(stderr, "            n  - measurements to genegate\n");
+        fprintf(stderr, "            n  - measurements to generate\n");
         exit(1);
     }
 
