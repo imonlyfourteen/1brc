@@ -1,7 +1,13 @@
-struct Station {
-    char *name;
-    float mean;
-} stations[] = {
+/*
+    Station list from
+        CreateMeasurements.java
+        CreateMeasurements2.java
+        CreateMeasurementsFast.java
+    and not from
+        CreateMeasurements3.java
+*/
+
+struct Station stations[] = {
     {"Abha", 18.0},
     {"Abidjan", 26.0},
     {"Abéché", 29.4},
