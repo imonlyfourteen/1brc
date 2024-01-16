@@ -6,8 +6,7 @@ https://github.com/gunnarmorling/1brc
 ### Usage
 
 ```bash
-$ gcc -O2 -march=native generate.c -lm -o generate
-$ gcc -O2 -march=native 1brc.c -o 1brc
+$ make
 
 $ ./generate 1000000 > measurements.txt
 0.049 seconds
